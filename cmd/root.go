@@ -1,34 +1,81 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package cmd
 
 import (
 	"fmt"
 	"os"
+	"io/ioutil"
+	"encoding/json"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/ghodss/yaml"
 )
 
 var cfgFile string
+var jsonFile string
+
+func isJSON(b []byte) bool {
+	var js interface{}
+	return json.Unmarshal(b, &js) == nil 
+}
+
+func json2yaml(json []byte) (s string) {
+	if ! isJSON(json) {
+		fmt.Println("The json argument is not valid!")
+		os.Exit(1)
+	}
+
+	if y, err := yaml.JSONToYAML(json); err != nil {
+		fmt.Print(err)
+		os.Exit(1)
+	} else {
+		s = string(y)
+	}
+
+	return
+}
 
 var RootCmd = &cobra.Command{
 	Use:   "json2yaml",
-	Short: "Convert json to yaml",
-	Long: `Convert json to yaml either from stdin or from a file`,
-	Run: func(cmd *cobra.Command, args []string) { },
+	Short: "Convert json to yaml then prints to stdout",
+	Long: `json2yaml is a command line tool that convert json to yaml
+either from stdin or from a file then prints the result to stdout 
+
+example:
+
+	$ json2yaml --file=foo.json
+	$ echo '{"foo": "bar"}' | json2yaml
+	
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+	
+		stdin := ""
+		fi, _ := os.Stdin.Stat()
+
+		if (fi.Mode() & os.ModeNamedPipe != 0) || (fi.Size() != 0) {
+			bytes, _ := ioutil.ReadAll(os.Stdin)
+			stdin = string(bytes)
+		}
+
+		if (jsonFile == "" && stdin == "") || (jsonFile != "" && stdin != "") {
+			cmd.Help()
+
+		} else if jsonFile != "" {
+
+			b, err := ioutil.ReadFile(jsonFile)
+			if err != nil {
+				fmt.Print(err)
+				os.Exit(1)
+			}
+
+			fmt.Print(json2yaml(b))
+
+		} else {
+			fmt.Print(json2yaml([]byte(stdin)))
+		}
+		
+	},
 }
 
 func Execute() {
@@ -41,6 +88,7 @@ func Execute() {
 func init() { 
 	cobra.OnInitialize(initConfig)
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.json2yaml.yaml)")
+	RootCmd.Flags().StringVarP(&jsonFile, "file", "f", "", "json file")
 }
 
 
