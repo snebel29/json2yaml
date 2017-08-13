@@ -6,9 +6,7 @@ This was created in order to learn [goland](https://golang.org/) and [spf13/cobr
 
 ## Installation
 
-Ensure your[_$GOPATH_](https://golang.org/doc/code.html#GOPATH) is set, and your _$GOPATH/bin_ folder is in of your _$PATH_
-
-Then simply 
+Ensure your [_$GOPATH_ is configured correctly](https://golang.org/doc/code.html#GOPATH), then simply 
 
 ```
 $ go get github.com/snebel29/json2yaml
