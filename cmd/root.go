@@ -42,9 +42,10 @@ var RootCmd = &cobra.Command{
 	Long: `json2yaml is a command line tool that convert json to yaml
 either from stdin or from a file then prints the result to stdout 
 
-example:
+examples:
 
 	$ json2yaml --file=foo.json
+	$ json2yaml < foo.json
 	$ echo '{"foo": "bar"}' | json2yaml
 	
 `,
