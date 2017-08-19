@@ -29,6 +29,7 @@ func json2yaml(json []byte) (s string) {
 	if y, err := yaml.JSONToYAML(json); err != nil {
 		fmt.Print(err)
 		os.Exit(1)
+		
 	} else {
 		s = string(y)
 	}
